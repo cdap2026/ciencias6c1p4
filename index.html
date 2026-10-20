@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Evaluación Ciencias de la Creación 6° - Gimnasio Cristiano Faro de Luz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- QRious para generación de Código QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <!-- jsPDF para generación de Informe PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --navy: #081b38;
+            --navy-light: #153866;
+            --gold: #c89d28;
+            --emerald: #059669;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: #f0f5f2;
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+                radial-gradient(at 90% 20%, rgba(200, 157, 40, 0.10) 0px, transparent 50%),
+                radial-gradient(at 50% 90%, rgba(8, 27, 56, 0.07) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        ::selection { background: transparent; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 20px 45px -15px rgba(8, 27, 56, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .option-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(8, 27, 56, 0.12);
+        }
+        .option-card.selected {
+            border-color: #059669;
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        .banner-container img {
+            width: 100%;
+            max-height: 125px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Animación suave para alertas */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        .toast-animate {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800 overflow-x-hidden"
+      oncopy="return false" oncut="return false" onpaste="return false" oncontextmenu="return false">
+
+    <!-- FRANJA DE SEGURIDAD SUPERIOR -->
+    <div class="bg-[#081b38] text-white text-xs py-1.5 px-4 flex flex-wrap justify-between items-center gap-2 border-b border-white/10 z-30">
+        <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+            <span class="font-semibold tracking-wide text-amber-300">SUPERVISIÓN ACTIVA:</span>
+            <span class="hidden md:inline text-slate-200">Prohibido cambiar de pestaña (-0.5 pts), salir de pantalla completa o superar el 60% de ruido (-0.5 pts).</span>
+        </div>
+        <div class="flex items-center gap-3 ml-auto">
+            <!-- Reloj en vivo -->
+            <div class="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-full">
+                <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span id="liveClockDisplay" class="font-mono font-bold text-xs">--:--:--</span>
+            </div>
+            <!-- Botón Acceso Docente siempre accesible -->
+            <button onclick="openTeacherModal()" class="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-[#081b38] font-extrabold px-3 py-1 rounded-full transition shadow-sm cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <span>Acceso Docente</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- BANNER INSTITUCIONAL SUPERIOR -->
+    <header class="bg-white border-b-4 border-[#c89d28] shadow-md relative z-20">
+        <div class="max-w-6xl mx-auto banner-container relative">
+            <img id="mainBannerImg" src="6°_CIENCIAS DE LA CREACIÓN.png" alt="Banner Institucional 6° Ciencias de la Creación" crossorigin="anonymous" onerror="useFallbackBanner()">
+        </div>
+        <!-- Sub-barra de estado de sensores (Visible durante el examen) -->
+        <div id="sensorStatusBar" class="hidden bg-slate-900 text-white px-4 py-2 border-t border-slate-700">
+            <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+                <!-- Estudiante activo -->
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <span id="headerStudentName" class="font-bold text-slate-100 uppercase">ESTUDIANTE</span>
+                </div>
+
+                <!-- Medidor de Decibeles en Vivo -->
+                <div class="flex items-center gap-2 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+                    <span class="text-slate-300 font-semibold">Sonómetro:</span>
+                    <div class="w-28 bg-slate-700 h-2.5 rounded-full overflow-hidden relative">
+                        <!-- Marca del 60% -->
+                        <div class="absolute left-[60%] top-0 bottom-0 w-0.5 bg-red-400 z-10" title="Límite 60%"></div>
+                        <div id="noiseBarFill" class="bg-emerald-400 h-full transition-all duration-150" style="width: 5%"></div>
+                    </div>
+                    <span id="noiseLevelText" class="font-mono font-bold text-emerald-400 w-10 text-right">0%</span>
+                </div>
+
+                <!-- Penalizaciones Acumuladas -->
+                <div class="flex items-center gap-3">
+                    <span id="penaltyCounterBadge" class="bg-emerald-900/70 text-emerald-300 border border-emerald-600/40 px-2.5 py-0.5 rounded-full font-bold">
+                        Penalización: 0.0 pts
+                    </span>
+                    <button onclick="requestFullScreenSafe()" class="bg-blue-800 hover:bg-blue-700 text-white px-2.5 py-1 rounded flex items-center gap-1 transition" title="Pantalla Completa">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                        <span>Pantalla Completa</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR DE NOTIFICACIONES FLOTANTES -->
+    <div id="toastContainer" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-11/12 max-w-xl pointer-events-none flex flex-col gap-2"></div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-grow p-4 md:p-6 lg:p-8 flex flex-col justify-center">
+
+        <!-- ================= PANTALLA 1: BIENVENIDA ================= -->
+        <section id="screen-welcome" class="max-w-4xl w-full mx-auto glass-card rounded-2xl p-6 md:p-10">
+            <div class="text-center mb-8">
+                <span class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-3 border border-emerald-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Evaluación por Competencias Tipo Prueba Saber • Grado 6°
+                </span>
+                <h1 class="text-2xl md:text-4xl font-extrabold text-[#081b38] tracking-tight">
+                    Sistemática, Taxonomía y Morfología Vegetal
+                </h1>
+                <p class="text-slate-600 mt-2 text-sm md:text-base max-w-2xl mx-auto">
+                    Gimnasio Cristiano Faro de Luz • Docente: <strong>Cristian David Ayazo</strong> • Horario oficial: <strong>8:25 AM – 10:05 AM</strong>
+                </p>
+            </div>
+
+            <!-- 3 Tarjetas de Ejes Temáticos con Iconos SVG -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200 flex flex-col items-center text-center shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-[#081b38] text-[#c89d28] flex items-center justify-center mb-3 shadow">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+                    </div>
+                    <h3 class="font-bold text-[#081b38] text-sm mb-1">Sistemática y Filogenia</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">Historia evolutiva, árboles filogenéticos, parentesco entre especies y diferencias frente a la taxonomía.</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-200 flex flex-col items-center text-center shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-amber-600 text-white flex items-center justify-center mb-3 shadow">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    </div>
+                    <h3 class="font-bold text-amber-900 text-sm mb-1">Categorías y Claves</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">Jerarquía taxonómica (Dominio a Especie), nomenclatura binomial y uso de claves dicotómicas.</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200 flex flex-col items-center text-center shadow-sm">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-3 shadow">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                    </div>
+                    <h3 class="font-bold text-emerald-900 text-sm mb-1">Morfología de las Hojas</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">Partes de la hoja (limbo, pecíolo, vaina), hojas simples y compuestas, nervaduras y bordes foliares.</p>
+                </div>
+            </div>
+
+            <!-- Cuadrícula de Reglas del Examen -->
+            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 mb-6">
+                <h2 class="text-sm font-extrabold text-[#081b38] uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-[#c89d28]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Condiciones Obligatorias de la Evaluación
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm text-slate-700">
+                    <div class="flex items-start gap-2.5 bg-white p-3 rounded-lg border border-slate-200">
+                        <span class="text-blue-600 mt-0.5">⏱️</span>
+                        <div><strong>Tiempos por pregunta:</strong> 12 cerradas (<strong>1.5 min</strong> c/u) y 3 abiertas al final (<strong>10 min</strong> c/u). Solo podrás avanzar cuando el reloj llegue a 00:00.</div>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-white p-3 rounded-lg border border-slate-200">
+                        <span class="text-emerald-600 mt-0.5">✍️</span>
+                        <div><strong>Preguntas abiertas:</strong> Debes redactar mínimo <strong>4 líneas coherentes</strong> con el tema. Copiar y pegar está totalmente bloqueado.</div>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-white p-3 rounded-lg border border-slate-200">
+                        <span class="text-red-600 mt-0.5">🚫</span>
+                        <div><strong>Control de pestañas y pantalla:</strong> Cambiar de pestaña penaliza <strong>-0.5 puntos</strong>. Si la pantalla del móvil se apaga sola por inactividad, no penaliza.</div>
+                    </div>
+                    <div class="flex items-start gap-2.5 bg-white p-3 rounded-lg border border-slate-200">
+                        <span class="text-amber-600 mt-0.5">🎙️</span>
+                        <div><strong>Medidor de decibeles:</strong> Se activa al iniciar. Si el ruido supera el <strong>60%</strong>, el sistema descuenta automáticamente <strong>-0.5 puntos</strong>.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulario de Ingreso del Estudiante -->
+            <div class="bg-white p-5 rounded-xl border-2 border-slate-200 mb-6 shadow-sm">
+                <label for="studentNameInput" class="block text-sm font-extrabold text-[#081b38] mb-2">
+                    NOMBRE Y APELLIDOS COMPLETOS DEL ESTUDIANTE:
+                </label>
+                <div class="relative">
+                    <input type="text" id="studentNameInput" 
+                           class="w-full pl-11 pr-4 py-3.5 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 text-base font-semibold uppercase transition"
+                           placeholder="Ejemplo: Mateo Alejandro Gómez Pérez" autocomplete="off">
+                    <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <p id="nameValidationHelp" class="text-xs text-slate-500 mt-2">
+                    * Ingresa al menos un nombre y un apellido para habilitar el botón de inicio.
+                </p>
+            </div>
+
+            <button id="btnStartExam" onclick="startExam()" disabled
+                    class="w-full bg-[#081b38] hover:bg-[#153866] text-white font-extrabold py-4 px-6 rounded-xl shadow-lg disabled:opacity-45 disabled:cursor-not-allowed transition flex items-center justify-center gap-3 text-lg cursor-pointer">
+                <svg class="w-6 h-6 text-[#c89d28]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Comenzar Evaluación en Pantalla Completa</span>
+            </button>
+        </section>
+
+        <!-- ================= PANTALLA 2: PREGUNTAS ================= -->
+        <section id="screen-question" class="max-w-4xl w-full mx-auto glass-card rounded-2xl p-5 md:p-8 hidden">
+            <!-- Barra superior de progreso y competencia -->
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <span id="questionNumberBadge" class="bg-[#081b38] text-white font-extrabold px-3.5 py-1 rounded-full text-xs md:text-sm">
+                        Pregunta 1 de 15
+                    </span>
+                    <span id="questionTypeBadge" class="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-xs border border-blue-200">
+                        Pregunta Cerrada (Selección Múltiple)
+                    </span>
+                </div>
+                <span id="competencyBadge" class="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full text-xs border border-emerald-300 flex items-center gap-1.5">
+                    🔬 Competencia
+                </span>
+            </div>
+
+            <!-- Barra de progreso lineal -->
+            <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-5">
+                <div id="examProgressBar" class="bg-gradient-to-r from-[#081b38] via-emerald-600 to-[#c89d28] h-full transition-all duration-500" style="width: 6%"></div>
+            </div>
+
+            <!-- Lámina Científica Ilustrada (SVG) -->
+            <div class="mb-5 bg-white rounded-xl border-2 border-slate-200 overflow-hidden shadow-sm">
+                <div class="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
+                    <span id="illustrationTitle" class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Lámina Científica de Análisis
+                    </span>
+                    <span id="topicTag" class="text-xs font-semibold text-slate-500">Tema</span>
+                </div>
+                <div id="questionSvgContainer" class="p-3 md:p-4 flex justify-center items-center bg-gradient-to-b from-white to-slate-50 min-h-[190px]">
+                    <!-- SVG inyectado dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Lectura de Contexto Extensa -->
+            <div class="bg-amber-50/70 border-l-4 border-[#c89d28] p-4 md:p-5 rounded-r-xl mb-5 shadow-sm">
+                <div class="text-xs font-extrabold text-amber-900 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    Contexto Científico y Situación Problema:
+                </div>
+                <p id="questionContextText" class="text-slate-700 text-sm md:text-base leading-relaxed text-justify"></p>
+            </div>
+
+            <!-- Enunciado de la Pregunta -->
+            <div class="mb-5">
+                <h2 id="questionStemText" class="text-base md:text-lg font-extrabold text-[#081b38] leading-snug bg-slate-100 p-4 rounded-xl border border-slate-200"></h2>
+            </div>
+
+            <!-- Panel del Temporizador Obligatorio de la Pregunta -->
+            <div class="bg-[#081b38] text-white p-3.5 md:p-4 rounded-xl mb-5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-[#c89d28]">
+                        <svg class="w-5 h-5 animate-spin" style="animation-duration: 6s;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div>
+                        <p id="timerLabelTitle" class="text-xs font-bold text-amber-300 uppercase tracking-wider">Tiempo obligatorio de lectura y análisis</p>
+                        <p id="timerHelperSubtext" class="text-xs text-slate-300">Debes esperar a que el contador llegue a 00:00 para avanzar.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 ml-auto">
+                    <span id="questionTimerDisplay" class="font-mono text-2xl md:text-3xl font-black bg-white text-[#081b38] px-4 py-1 rounded-lg shadow-inner">
+                        01:30
+                    </span>
+                </div>
+            </div>
+
+            <!-- Contenedor de Opciones Cerradas (A, B, C, D) -->
+            <div id="closedOptionsContainer" class="flex flex-col gap-3 mb-6"></div>
+
+            <!-- Contenedor de Respuesta Abierta (Mínimo 4 líneas coherentes) -->
+            <div id="openQuestionContainer" class="hidden mb-6">
+                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-3 text-xs md:text-sm text-emerald-900 flex items-center justify-between flex-wrap gap-2">
+                    <span>✍️ <strong>Requisito de redacción:</strong> Escribe mínimo <strong>4 líneas completas y coherentes</strong> (al menos 28 palabras con sentido biológico).</span>
+                    <span id="openLinesBadge" class="bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-xs border border-amber-300">
+                        Líneas válidas: 0 / 4
+                    </span>
+                </div>
+                <textarea id="openAnswerInput" rows="7"
+                          class="w-full p-4 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 text-sm md:text-base leading-relaxed resize-none bg-white shadow-inner"
+                          placeholder="Redacta aquí tu explicación científica detallada cumpliendo al menos 4 líneas coherentes..."></textarea>
+                <div class="flex justify-between items-center text-xs text-slate-500 mt-1.5 px-1">
+                    <span id="coherenceStatusText">Escribe usando los conceptos clave de la pregunta.</span>
+                    <span id="wordCountTracker" class="font-bold">0 palabras</span>
+                </div>
+            </div>
+
+            <!-- Botón de Avanzar y Controles Rápidos -->
+            <div class="flex flex-col sm:flex-row gap-3 items-center justify-between pt-3 border-t border-slate-200">
+                <button onclick="openTeacherModal()" class="w-full sm:w-auto text-xs font-bold text-slate-600 hover:text-[#081b38] bg-slate-200/80 hover:bg-slate-300 px-4 py-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4 text-[#081b38]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    <span>Controles del Docente</span>
+                </button>
+
+                <button id="btnNextQuestion" onclick="handleNextQuestion()" disabled
+                        class="w-full sm:flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-4 px-6 rounded-xl shadow-lg disabled:opacity-45 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 text-base md:text-lg cursor-pointer">
+                    <span id="btnNextQuestionText">Esperando tiempo mínimo (01:30)...</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= PANTALLA 3: RESULTADOS, QR Y PDF ================= -->
+        <section id="screen-results" class="max-w-4xl w-full mx-auto glass-card rounded-2xl p-6 md:p-10 hidden">
+            <!-- Banner superior dentro de la tarjeta de resultados final -->
+            <div class="mb-6 rounded-xl overflow-hidden border-2 border-[#c89d28] bg-white shadow">
+                <img id="resultsBannerImg" src="6°_CIENCIAS DE LA CREACIÓN.png" alt="Banner Resultados" class="w-full max-h-28 object-contain mx-auto" onerror="this.src = window.fallbackBannerDataUrl">
+            </div>
+
+            <div class="text-center mb-6">
+                <span class="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">
+                    ✅ Evaluación Finalizada y Registrada
+                </span>
+                <h2 class="text-2xl md:text-3xl font-black text-[#081b38] mt-2">Informe Oficial de Resultados</h2>
+                <p id="resultStudentSubtitle" class="text-slate-600 font-bold text-base mt-1"></p>
+            </div>
+
+            <!-- Resumen de Calificación y Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                <!-- Nota Final -->
+                <div class="bg-[#081b38] text-white p-6 rounded-2xl text-center flex flex-col justify-center items-center shadow-lg border-2 border-[#c89d28]">
+                    <span class="text-xs uppercase tracking-widest text-amber-300 font-bold">Calificación Final</span>
+                    <div id="finalGradeNumber" class="text-6xl font-black my-2 text-white">0.00</div>
+                    <span class="text-xs text-slate-300">Escala de 0.00 a 5.00</span>
+                </div>
+
+                <!-- Desglose de Preguntas -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between text-sm">
+                    <h3 class="font-extrabold text-[#081b38] border-b pb-2 mb-2 flex items-center gap-1.5">
+                        📊 Desglose Académico
+                    </h3>
+                    <div class="space-y-1.5 text-slate-700">
+                        <div class="flex justify-between"><span>Preguntas Contestadas:</span><strong id="statAnswered">0 / 15</strong></div>
+                        <div class="flex justify-between text-emerald-700"><span>Cerradas Correctas:</span><strong id="statCorrect">0 / 12</strong></div>
+                        <div class="flex justify-between text-red-600"><span>Cerradas Incorrectas:</span><strong id="statIncorrect">0 / 12</strong></div>
+                        <div class="flex justify-between text-blue-700"><span>Abiertas Validadas:</span><strong id="statOpenValid">0 / 3</strong></div>
+                        <div class="flex justify-between text-amber-700 border-t pt-1"><span>Penalizaciones:</span><strong id="statPenalties">-0.00 pts</strong></div>
+                    </div>
+                </div>
+
+                <!-- Tiempos de Ejecución -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between text-sm">
+                    <h3 class="font-extrabold text-[#081b38] border-b pb-2 mb-2 flex items-center gap-1.5">
+                        🕒 Registro de Tiempos
+                    </h3>
+                    <div class="space-y-1.5 text-slate-700">
+                        <div class="flex justify-between"><span>Fecha:</span><strong id="statDate">--/--/----</strong></div>
+                        <div class="flex justify-between"><span>Hora de Inicio:</span><strong id="statStartTime">--:--:--</strong></div>
+                        <div class="flex justify-between"><span>Hora de Finalización:</span><strong id="statEndTime">--:--:--</strong></div>
+                        <div class="flex justify-between"><span>Docente:</span><strong>Cristian D. Ayazo</strong></div>
+                        <div class="flex justify-between"><span>Grado:</span><strong>6° Grade</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Código QR para Escaneo del Docente -->
+            <div class="bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-300 mb-6 flex flex-col md:flex-row items-center justify-center gap-6">
+                <div class="bg-white p-3 rounded-xl shadow border border-slate-200 shrink-0">
+                    <canvas id="qrCanvas" width="210" height="210"></canvas>
+                </div>
+                <div class="text-center md:text-left max-w-md">
+                    <span class="bg-amber-100 text-amber-900 text-xs font-extrabold px-2.5 py-1 rounded-full">VERIFICACIÓN INMEDIATA</span>
+                    <h3 class="text-lg font-extrabold text-[#081b38] mt-2">Código QR con el Detalle del Examen</h3>
+                    <p class="text-xs md:text-sm text-slate-600 mt-1 leading-relaxed">
+                        Presenta este código QR al docente <strong>Cristian David Ayazo</strong> para escanear tu calificación, tiempos, respuestas correctas/incorrectas y penalizaciones. Además, descarga el archivo PDF completo a continuación.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botón de Descarga de PDF -->
+            <button onclick="generateDetailedPDF()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-4 px-6 rounded-xl shadow-xl transition flex items-center justify-center gap-3 text-lg cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Descargar Informe Detallado en PDF para enviar al Docente</span>
+            </button>
+        </section>
+    </main>
+
+    <!-- ================= MODAL DE ADVERTENCIA DE PANTALLA COMPLETA ================= -->
+    <div id="fullscreenModal" class="fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center shadow-2xl border-t-4 border-red-600">
+            <div class="w-14 h-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 class="text-xl font-extrabold text-[#081b38]">¡Advertencia de Pantalla Completa!</h3>
+            <p class="text-sm text-slate-600 mt-2 mb-5">
+                Has minimizado o salido del modo de pantalla completa. Por reglamento institucional, toda la evaluación debe desarrollarse en pantalla completa.
+            </p>
+            <button onclick="returnToFullscreen()" class="w-full bg-[#081b38] hover:bg-blue-900 text-white font-bold py-3 rounded-xl shadow transition cursor-pointer">
+                Volver a Pantalla Completa Ahora
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= MODAL DE ACCESO EXCLUSIVO DEL DOCENTE ================= -->
+    <div id="teacherModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border-t-4 border-[#c89d28]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-extrabold text-[#081b38] flex items-center gap-2">
+                    <svg class="w-5 h-5 text-[#c89d28]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Panel de Control Docente
+                </h3>
+                <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl cursor-pointer">&times;</button>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Contraseña del Docente:</label>
+                <input type="password" id="teacherPasswordInput"
+                       class="w-full px-3.5 py-2.5 border-2 border-slate-300 rounded-xl focus:outline-none focus:border-[#081b38] font-mono text-base"
+                       placeholder="Ingresa la contraseña...">
+                <p id="teacherAuthError" class="text-xs text-red-600 font-bold mt-1 hidden">Contraseña incorrecta.</p>
+            </div>
+
+            <div class="space-y-2.5 text-sm">
+                <button onclick="executeTeacherCommand('enter_anytime')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-between cursor-pointer">
+                    <span>1. Ingresar / Desbloquear Examen Ahora</span>
+                    <span>🔓</span>
+                </button>
+                <button onclick="executeTeacherCommand('advance_question')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-between cursor-pointer">
+                    <span>2. Avanzar a la Siguiente Pregunta</span>
+                    <span>⏭️</span>
+                </button>
+                <button onclick="executeTeacherCommand('jump_to_open')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-between cursor-pointer">
+                    <span>3. Ir a Preguntas Abiertas / Finalizar Abiertas</span>
+                    <span>✍️</span>
+                </button>
+                <button onclick="executeTeacherCommand('finish_exam')" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-between cursor-pointer">
+                    <span>4. Finalizar por Completo el Examen</span>
+                    <span>🏁</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*************************************************************************
+         * 1. GENERADOR DE BANNER EN CANVAS (IDÉNTICO AL DISEÑO OFICIAL)
+         * Garantiza que el banner siempre se vea en web y PDF sin errores CORS.
+         *************************************************************************/
+        function generateOfficialBannerDataURL() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1600;
+            canvas.height = 240;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo claro con textura geométrica sutil
+            const bgGrad = ctx.createLinearGradient(0, 0, 1600, 240);
+            bgGrad.addColorStop(0, '#f8fafc');
+            bgGrad.addColorStop(0.5, '#ffffff');
+            bgGrad.addColorStop(1, '#f1f5f9');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 1600, 240);
+
+            // Franjas diagonales doradas y azul marino izquierdas
+            ctx.fillStyle = '#c89d28';
+            ctx.beginPath(); ctx.moveTo(350, 0); ctx.lineTo(400, 0); ctx.lineTo(290, 240); ctx.lineTo(240, 240); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#081b38';
+            ctx.beginPath(); ctx.moveTo(400, 0); ctx.lineTo(460, 0); ctx.lineTo(350, 240); ctx.lineTo(290, 240); ctx.closePath(); ctx.fill();
+
+            // Franjas diagonales derechas
+            ctx.fillStyle = '#081b38';
+            ctx.beginPath(); ctx.moveTo(1310, 0); ctx.lineTo(1365, 0); ctx.lineTo(1265, 240); ctx.lineTo(1210, 240); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#c89d28';
+            ctx.beginPath(); ctx.moveTo(1365, 0); ctx.lineTo(1400, 0); ctx.lineTo(1300, 240); ctx.lineTo(1265, 240); ctx.closePath(); ctx.fill();
+
+            // Logo izquierdo "M" Manantial de Dios
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 14;
+            ctx.beginPath();
+            ctx.moveTo(45, 180); ctx.lineTo(45, 65); ctx.lineTo(105, 105); ctx.lineTo(165, 65); ctx.lineTo(165, 180);
+            ctx.stroke();
+            ctx.fillStyle = '#081b38';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('MANANTIAL DE DIOS', 105, 215);
+
+            // Textos centrales
+            ctx.fillStyle = '#081b38';
+            ctx.font = '800 44px sans-serif';
+            ctx.fillText('EXAMEN PARCIAL - IV PERIODO', 835, 68);
+
+            ctx.fillStyle = '#334155';
+            ctx.font = '700 42px sans-serif';
+            ctx.fillText('6° GRADE', 835, 130);
+
+            // Cápsula azul con borde dorado: CIENCIAS DE LA CREACIÓN
+            ctx.fillStyle = '#081b38';
+            ctx.strokeStyle = '#c89d28';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.roundRect ? ctx.roundRect(510, 152, 650, 68, 22) : ctx.rect(510, 152, 650, 68);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 38px sans-serif';
+            ctx.fillText('CIENCIAS DE LA CREACIÓN', 835, 199);
+
+            // Escudo derecho The Lighthouse School + Código
+            ctx.fillStyle = '#081b38';
+            ctx.beginPath();
+            ctx.arc(1495, 95, 58, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#c89d28';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 15px sans-serif';
+            ctx.fillText('THE LIGHTHOUSE', 1495, 95);
+            ctx.fillStyle = '#c89d28';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText('SCHOOL', 1495, 114);
+
+            ctx.fillStyle = '#1e293b';
+            ctx.font = '600 18px sans-serif';
+            ctx.fillText('CÓDIGO: F-GA2-004', 1495, 195);
+            ctx.fillText('VERSIÓN: 2', 1495, 218);
+
+            return canvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        window.fallbackBannerDataUrl = generateOfficialBannerDataURL();
+
+        function useFallbackBanner() {
+            const img = document.getElementById('mainBannerImg');
+            if (img && img.src !== window.fallbackBannerDataUrl) {
+                img.src = window.fallbackBannerDataUrl;
+            }
+        }
+
+        /*************************************************************************
+         * 2. LÁMINAS CIENTÍFICAS VECTORIALES (SVG) PARA LAS 15 PREGUNTAS
+         *************************************************************************/
+        const SVG_ILLUSTRATIONS = {
+            // P1: Sistemática vs Taxonomía
+            q1: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="10" y="15" width="250" height="150" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+                <text x="135" y="42" text-anchor="middle" fill="#1e3a8a" font-weight="bold" font-size="15">TAXONOMÍA</text>
+                <text x="135" y="65" text-anchor="middle" fill="#475569" font-size="12">Clasifica, describe y nombra</text>
+                <rect x="45" y="80" width="180" height="30" rx="6" fill="#dbeafe"/>
+                <text x="135" y="100" text-anchor="middle" fill="#1e40af" font-style="italic" font-weight="bold" font-size="13">Panthera onca (Jaguar)</text>
+                <text x="135" y="135" text-anchor="middle" fill="#334155" font-size="11">Reglas de Nomenclatura</text>
+
+                <path d="M270 90 L320 90" stroke="#c89d28" stroke-width="4" marker-end="url(#arrow)"/>
+                
+                <rect x="330" y="15" width="260" height="150" rx="12" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+                <text x="460" y="42" text-anchor="middle" fill="#065f46" font-weight="bold" font-size="15">SISTEMÁTICA BIOLÓGICA</text>
+                <text x="460" y="62" text-anchor="middle" fill="#047857" font-size="11">Historia evolutiva y parentesco (ADN + Fósiles)</text>
+                <line x1="380" y1="145" x2="430" y2="95" stroke="#059669" stroke-width="3"/>
+                <line x1="430" y1="95" x2="480" y2="145" stroke="#059669" stroke-width="3"/>
+                <line x1="405" y1="120" x2="440" y2="145" stroke="#059669" stroke-width="3"/>
+                <circle cx="430" cy="95" r="5" fill="#c89d28"/>
+                <text x="525" y="125" text-anchor="middle" fill="#065f46" font-size="11" font-weight="bold">Árbol Filogenético</text>
+            </svg>`,
+
+            // P2: Nomenclatura Binomial
+            q2: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="20" y="20" width="560" height="140" rx="14" fill="#fefce8" stroke="#eab308" stroke-width="2"/>
+                <text x="300" y="48" text-anchor="middle" fill="#713f12" font-weight="bold" font-size="15">SISTEMA BINOMIAL DE CARLOS LINNEO</text>
+                <rect x="90" y="65" width="190" height="50" rx="8" fill="#fef08a" stroke="#ca8a04"/>
+                <text x="185" y="95" text-anchor="middle" fill="#854d0e" font-style="italic" font-weight="bold" font-size="22">Canis</text>
+                <text x="185" y="138" text-anchor="middle" fill="#713f12" font-size="12" font-weight="bold">1. GÉNERO (Inicial Mayúscula)</text>
+
+                <rect x="320" y="65" width="190" height="50" rx="8" fill="#fde047" stroke="#ca8a04"/>
+                <text x="415" y="95" text-anchor="middle" fill="#854d0e" font-style="italic" font-weight="bold" font-size="22">lupus</text>
+                <text x="415" y="138" text-anchor="middle" fill="#713f12" font-size="12" font-weight="bold">2. EPÍTETO ESPECÍFICO (minúscula)</text>
+            </svg>`,
+
+            // P3: Categorías Taxonómicas (Jerarquía)
+            q3: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <polygon points="80,165 520,165 340,15 260,15" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+                <line x1="235" y1="38" x2="365" y2="38" stroke="#0284c7"/><text x="300" y="33" text-anchor="middle" font-size="11" font-weight="bold" fill="#0369a1">ESPECIE (+ Específico)</text>
+                <line x1="210" y1="60" x2="390" y2="60" stroke="#0284c7"/><text x="300" y="54" text-anchor="middle" font-size="11" font-weight="bold" fill="#0369a1">GÉNERO</text>
+                <line x1="185" y1="82" x2="415" y2="82" stroke="#0284c7"/><text x="300" y="76" text-anchor="middle" font-size="11" font-weight="bold" fill="#0369a1">FAMILIA</text>
+                <line x1="160" y1="104" x2="440" y2="104" stroke="#0284c7"/><text x="300" y="98" text-anchor="middle" font-size="11" font-weight="bold" fill="#0369a1">ORDEN</text>
+                <line x1="135" y1="126" x2="465" y2="126" stroke="#0284c7"/><text x="300" y="120" text-anchor="middle" font-size="11" font-weight="bold" fill="#0369a1">CLASE / FILO</text>
+                <text x="300" y="152" text-anchor="middle" font-size="12" font-weight="bold" fill="#0c4a6e">DOMINIO Y REINO (+ General)</text>
+            </svg>`,
+
+            // P4: Clave Taxonómica Dicotómica
+            q4: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="205" y="10" width="190" height="34" rx="8" fill="#081b38"/>
+                <text x="300" y="32" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">1. ¿Presenta semillas?</text>
+                <line x1="250" y1="44" x2="140" y2="75" stroke="#081b38" stroke-width="2"/>
+                <line x1="350" y1="44" x2="460" y2="75" stroke="#081b38" stroke-width="2"/>
+                <rect x="55" y="75" width="170" height="34" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+                <text x="140" y="96" text-anchor="middle" fill="#166534" font-size="11" font-weight="bold">1a. SÍ → Ir al paso 2</text>
+                <rect x="375" y="75" width="170" height="34" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+                <text x="460" y="96" text-anchor="middle" fill="#991b1b" font-size="11" font-weight="bold">1b. NO → Helecho (Pteridofita)</text>
+                <line x1="100" y1="109" x2="75" y2="135" stroke="#16a34a" stroke-width="2"/>
+                <line x1="180" y1="109" x2="205" y2="135" stroke="#16a34a" stroke-width="2"/>
+                <text x="75" y="155" text-anchor="middle" fill="#065f46" font-size="11" font-weight="bold">2a. Con flores (Angiosperma)</text>
+                <text x="225" y="155" text-anchor="middle" fill="#065f46" font-size="11" font-weight="bold">2b. Sin flores (Gimnosperma)</text>
+            </svg>`,
+
+            // P5: Partes anatómicas de una hoja
+            q5: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <!-- Tallo -->
+                <path d="M90,20 L90,170" stroke="#78350f" stroke-width="10" stroke-linecap="round"/>
+                <!-- Vaina y Yema axilar -->
+                <circle cx="98" cy="115" r="7" fill="#15803d"/>
+                <text x="50" y="120" text-anchor="middle" font-size="11" font-weight="bold" fill="#78350f">Vaina / Yema</text>
+                <!-- Pecíolo -->
+                <path d="M95,122 Q145,120 185,100" stroke="#16a34a" stroke-width="6" fill="none"/>
+                <text x="145" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#166534">Pecíolo</text>
+                <!-- Limbo foliar -->
+                <path d="M185,100 C230,30 370,35 450,90 C370,155 230,155 185,100 Z" fill="#4ade80" stroke="#15803d" stroke-width="3"/>
+                <!-- Nervadura principal y secundarias -->
+                <path d="M185,100 L445,90" stroke="#166534" stroke-width="3"/>
+                <path d="M250,97 L285,60 M310,95 L350,62 M365,93 L395,70" stroke="#166534" stroke-width="2"/>
+                <path d="M250,97 L285,130 M310,95 L350,128 M365,93 L395,115" stroke="#166534" stroke-width="2"/>
+                <text x="315" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">LIMBO O LÁMINA FOLIAR (Haz y Envés)</text>
+                <text x="510" y="95" text-anchor="middle" font-size="12" font-weight="bold" fill="#15803d">Ápice (Punta)</text>
+            </svg>`,
+
+            // P6: Hoja Simple vs Hoja Compuesta
+            q6: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="15" y="10" width="265" height="160" rx="10" fill="#f0fdf4" stroke="#22c55e"/>
+                <text x="147" y="32" text-anchor="middle" font-weight="bold" font-size="13" fill="#14532d">TIPO I: HOJA SIMPLE</text>
+                <line x1="60" y1="100" x2="105" y2="100" stroke="#15803d" stroke-width="4"/>
+                <path d="M105,100 C135,50 215,50 245,100 C215,150 135,150 105,100 Z" fill="#86efac" stroke="#16a34a" stroke-width="2.5"/>
+                <line x1="105" y1="100" x2="240" y2="100" stroke="#15803d" stroke-width="2"/>
+                <text x="147" y="158" text-anchor="middle" font-size="11" fill="#166534">Lámina continua y sin dividir</text>
+
+                <rect x="315" y="10" width="270" height="160" rx="10" fill="#ecfdf5" stroke="#10b981"/>
+                <text x="450" y="32" text-anchor="middle" font-weight="bold" font-size="13" fill="#064e3b">TIPO II: HOJA COMPUESTA</text>
+                <line x1="345" y1="100" x2="540" y2="100" stroke="#15803d" stroke-width="3"/>
+                <ellipse cx="400" cy="70" rx="22" ry="12" fill="#6ee7b7" stroke="#059669" stroke-width="2"/>
+                <ellipse cx="460" cy="70" rx="22" ry="12" fill="#6ee7b7" stroke="#059669" stroke-width="2"/>
+                <ellipse cx="400" cy="130" rx="22" ry="12" fill="#6ee7b7" stroke="#059669" stroke-width="2"/>
+                <ellipse cx="460" cy="130" rx="22" ry="12" fill="#6ee7b7" stroke="#059669" stroke-width="2"/>
+                <ellipse cx="555" cy="100" rx="22" ry="12" fill="#6ee7b7" stroke="#059669" stroke-width="2"/>
+                <text x="450" y="158" text-anchor="middle" font-size="11" fill="#065f46">Dividida en Folíolos sobre un Raquis</text>
+            </svg>`,
+
+            // P7: Tipos de Nervadura Foliar
+            q7: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <!-- Pinnatinervia -->
+                <rect x="15" y="15" width="175" height="150" rx="8" fill="#fff" stroke="#cbd5e1"/>
+                <text x="102" y="35" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">1. Pinnatinervia</text>
+                <ellipse cx="102" cy="95" rx="55" ry="32" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                <line x1="47" y1="95" x2="157" y2="95" stroke="#15803d" stroke-width="2.5"/>
+                <line x1="80" y1="95" x2="95" y2="70" stroke="#15803d" stroke-width="1.5"/>
+                <line x1="110" y1="95" x2="125" y2="70" stroke="#15803d" stroke-width="1.5"/>
+                <line x1="80" y1="95" x2="95" y2="120" stroke="#15803d" stroke-width="1.5"/>
+                <line x1="110" y1="95" x2="125" y2="120" stroke="#15803d" stroke-width="1.5"/>
+
+                <!-- Paralelinervia -->
+                <rect x="212" y="15" width="175" height="150" rx="8" fill="#fff" stroke="#cbd5e1"/>
+                <text x="300" y="35" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">2. Paralelinervia</text>
+                <path d="M235,95 Q300,55 365,95 Q300,135 235,95 Z" fill="#bbf7d0" stroke="#16a34a" stroke-width="2"/>
+                <path d="M242,95 Q300,72 358,95" stroke="#15803d" stroke-width="1.5" fill="none"/>
+                <line x1="238" y1="95" x2="362" y2="95" stroke="#15803d" stroke-width="2"/>
+                <path d="M242,95 Q300,118 358,95" stroke="#15803d" stroke-width="1.5" fill="none"/>
+
+                <!-- Palmatinervia -->
+                <rect x="410" y="15" width="175" height="150" rx="8" fill="#fff" stroke="#cbd5e1"/>
+                <text x="497" y="35" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">3. Palmatinervia</text>
+                <circle cx="497" cy="98" r="40" fill="#a7f3d0" stroke="#059669" stroke-width="2"/>
+                <line x1="497" y1="135" x2="497" y2="62" stroke="#047857" stroke-width="2"/>
+                <line x1="497" y1="135" x2="465" y2="78" stroke="#047857" stroke-width="2"/>
+                <line x1="497" y1="135" x2="530" y2="78" stroke="#047857" stroke-width="2"/>
+            </svg>`,
+
+            // P8: Bordes o Márgenes de las Hojas
+            q8: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="20" y="20" width="170" height="140" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+                <text x="105" y="42" text-anchor="middle" font-weight="bold" font-size="13" fill="#14532d">Borde Entero (Liso)</text>
+                <ellipse cx="105" cy="100" rx="55" ry="28" fill="#86efac" stroke="#15803d" stroke-width="2.5"/>
+
+                <rect x="215" y="20" width="170" height="140" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+                <text x="300" y="42" text-anchor="middle" font-weight="bold" font-size="13" fill="#14532d">Borde Aserrado</text>
+                <polygon points="240,100 255,80 265,88 280,72 290,82 310,70 320,82 340,75 360,100 340,125 320,118 310,130 290,118 280,128 265,112 255,120" fill="#4ade80" stroke="#15803d" stroke-width="2"/>
+
+                <rect x="410" y="20" width="170" height="140" rx="10" fill="#f0fdf4" stroke="#16a34a"/>
+                <text x="495" y="42" text-anchor="middle" font-weight="bold" font-size="13" fill="#14532d">Borde Lobulado</text>
+                <path d="M440,100 C445,70 470,70 475,90 C485,60 510,60 515,90 C530,70 550,80 550,100 C550,125 525,130 515,110 C505,140 480,140 475,110 C460,130 440,120 440,100 Z" fill="#6ee7b7" stroke="#047857" stroke-width="2"/>
+            </svg>`,
+
+            // P9: Cladograma Evolutivo
+            q9: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <line x1="60" y1="155" x2="480" y2="25" stroke="#081b38" stroke-width="4"/>
+                <line x1="150" y1="127" x2="220" y2="45" stroke="#081b38" stroke-width="3"/>
+                <line x1="270" y1="90" x2="340" y2="45" stroke="#081b38" stroke-width="3"/>
+                <line x1="390" y1="53" x2="420" y2="45" stroke="#081b38" stroke-width="3"/>
+                <circle cx="390" cy="53" r="7" fill="#ef4444"/>
+                <text x="215" y="35" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">Peces</text>
+                <text x="335" y="35" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">Reptiles</text>
+                <text x="415" y="35" text-anchor="middle" font-size="12" font-weight="bold" fill="#059669">Lobo (Canis lupus)</text>
+                <text x="515" y="30" text-anchor="middle" font-size="12" font-weight="bold" fill="#059669">Coyote (Canis latrans)</text>
+                <text x="435" y="85" font-size="11" font-weight="bold" fill="#b91c1c">← Ancestro común reciente</text>
+            </svg>`,
+
+            // P10: Los 3 Dominios y Sistemática Molecular
+            q10: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="25" y="25" width="160" height="130" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+                <text x="105" y="55" text-anchor="middle" font-weight="bold" font-size="14" fill="#1e40af">DOMINIO BACTERIA</text>
+                <text x="105" y="85" text-anchor="middle" font-size="11" fill="#1e3a8a">Procariontes (Sin núcleo)</text>
+                <text x="105" y="110" text-anchor="middle" font-size="11" fill="#1e3a8a">Pared con peptidoglicano</text>
+
+                <rect x="220" y="25" width="160" height="130" rx="12" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                <text x="300" y="55" text-anchor="middle" font-weight="bold" font-size="14" fill="#92400e">DOMINIO ARCHAEA</text>
+                <text x="300" y="85" text-anchor="middle" font-size="11" fill="#78350f">Procariontes extremófilos</text>
+                <text x="300" y="110" text-anchor="middle" font-size="11" fill="#78350f">Diferenciados por ARN/ADN</text>
+
+                <rect x="415" y="25" width="160" height="130" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+                <text x="495" y="55" text-anchor="middle" font-weight="bold" font-size="14" fill="#166534">DOMINIO EUKARYA</text>
+                <text x="495" y="85" text-anchor="middle" font-size="11" fill="#14532d">Células con núcleo verdadero</text>
+                <text x="495" y="110" text-anchor="middle" font-size="11" fill="#14532d">Protista, Fungi, Plantae, Animalia</text>
+            </svg>`,
+
+            // P11: Estomas e intercambio gaseoso en el envés de la hoja
+            q11: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="40" y="20" width="520" height="140" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+                <path d="M220,90 C220,45 275,45 275,90 C275,135 220,135 220,90 Z" fill="#4ade80" stroke="#15803d" stroke-width="3"/>
+                <path d="M325,90 C325,45 270,45 270,90 C270,135 325,135 325,90 Z" fill="#4ade80" stroke="#15803d" stroke-width="3"/>
+                <ellipse cx="272" cy="90" rx="10" ry="22" fill="#064e3b"/>
+                <text x="130" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#065f46">Entrada de CO₂</text>
+                <text x="435" y="75" text-anchor="middle" font-size="13" font-weight="bold" fill="#0284c7">Salida de O₂ y Vapor H₂O</text>
+                <text x="275" y="150" text-anchor="middle" font-size="12" font-weight="bold" fill="#14532d">ESTOMA EN EL ENVÉS FOLIAR (Células Oclusivas y Ostiolo)</text>
+            </svg>`,
+
+            // P12: Comparación Taxonómica de Especies Cercanas
+            q12: `<svg viewBox="0 0 600 180" class="w-full max-w-xl h-44">
+                <rect x="20" y="15" width="560" height="150" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+                <text x="300" y="40" text-anchor="middle" font-weight="bold" font-size="14" fill="#081b38">TABLA COMPARATIVA DE CATEGORÍAS TAXONÓMICAS</text>
+                <line x1="40" y1="52" x2="560" y2="52" stroke="#cbd5e1" stroke-width="2"/>
+                <text x="120" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Especie A: Ara macao</text>
+                <text x="300" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Especie B: Ara ararauna</text>
+                <text x="480" y="75" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Especie C: Amazona ochrocephala</text>
+                <text x="120" y="105" text-anchor="middle" font-size="12" fill="#059669" font-weight="bold">Familia: Psittacidae | Género: Ara</text>
+                <text x="300" y="105" text-anchor="middle" font-size="12" fill="#059669" font-weight="bold">Familia: Psittacidae | Género: Ara</text>
+                <text x="480" y="105" text-anchor="middle" font-size="12" fill="#d97706" font-weight="bold">Familia: Psittacidae | Género: Amazona</text>
+                <text x="300" y="142" text-anchor="middle" font-size="12" fill="#1e293b">Las tres aves comparten Orden y Familia, pero solo A y B comparten el mismo Género.</text>
+            </svg>`
+        };
+
+        /*************************************************************************
+         * 3. BANCO DE 15 PREGUNTAS CON CONTEXTOS EXTENSOS (PRUEBA SABER 6°)
+         * 12 Cerradas (1.5 min = 90s) + 3 Abiertas (10 min = 600s)
+         *************************************************************************/
+        const EXAM_QUESTIONS = [
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Uso comprensivo del conocimiento científico",
+                topic: "Diferencias entre Sistemática y Taxonomía",
+                svg: SVG_ILLUSTRATIONS.q1,
+                context: "Durante una expedición científica en la serranía de La Macarena (Colombia), un equipo de biólogos descubrió un pequeño anfibio desconocido para la ciencia. En la primera fase del estudio, el investigador principal registró sus medidas corporales, el patrón de coloración de su piel, le asignó un nombre científico en latín siguiendo códigos internacionales y lo ubicó dentro de una familia y un género específicos. En una segunda fase de laboratorio, otra investigadora secuenció el ADN mitocondrial del anfibio y comparó sus restos óseos con el registro fósil de otras especies sudamericanas para construir un árbol filogenético que muestra quiénes son sus ancestros comunes y cómo evolucionó a lo largo del tiempo.",
+                text: "Teniendo en cuenta las actividades desarrolladas por ambos científicos en la expedición, ¿cuál es la diferencia fundamental entre el trabajo de la taxonomía y el de la sistemática biológica?",
+                options: [
+                    "La taxonomía estudia exclusivamente el comportamiento ecológico de los animales en la selva, mientras que la sistemática se encarga únicamente de traducir sus nombres comunes al idioma latín.",
+                    "La taxonomía se enfoca en describir, nombrar y agrupar formalmente a los organismos en categorías, mientras que la sistemática integra esa información con datos genéticos y evolutivos para reconstruir sus relaciones de parentesco.",
+                    "La sistemática es una rama antigua que clasifica a los seres vivos únicamente por su color y tamaño externo, mientras que la taxonomía descarta el uso de categorías como el reino, el género o la especie.",
+                    "Ambas disciplinas realizan exactamente el mismo procedimiento sin ninguna diferencia metodológica, ya que clasificar un organismo no guarda ninguna relación con su historia evolutiva ni con su ADN."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Explicación de fenómenos",
+                topic: "Taxonomía y Nomenclatura Binomial",
+                svg: SVG_ILLUSTRATIONS.q2,
+                context: "En las diferentes regiones de América Latina, un mismo mamífero carnívoro de gran tamaño es conocido por los habitantes locales con múltiples nombres comunes: en algunas zonas de México y Centroamérica lo llaman 'tigre real' o 'balam', en los Llanos colombo-venezolanos suelen llamarlo 'mariposo' o 'jaguar', y en regiones del sur del continente se le conoce como 'yaguareté' o 'otorongo'. En el siglo XVIII, el naturalista sueco Carlos Linneo propuso el sistema de nomenclatura binomial para solucionar este problema, asignándole a esta especie el nombre único de Panthera onca en todas las publicaciones académicas del planeta.",
+                text: "¿Por qué la implementación del sistema de nomenclatura binomial de Linneo resulta indispensable para el trabajo colaborativo de los científicos a nivel mundial?",
+                options: [
+                    "Porque permite que cada país cambie libremente el nombre científico de sus especies cada año según las tradiciones culturales de sus comunidades locales.",
+                    "Porque reemplaza todos los nombres regionales confusos por un nombre universal estandarizado compuesto por el Género y el epíteto específico, evitando errores al identificar la misma especie.",
+                    "Porque demuestra que los organismos que tienen muchos nombres comunes en realidad pertenecen a reinos biológicos completamente diferentes entre sí.",
+                    "Porque obliga a que únicamente se estudien las especies animales que habitan en Europa, descartando la biodiversidad de las selvas tropicales de América."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Uso comprensivo del conocimiento científico",
+                topic: "Categorías Taxonómicas Jerárquicas",
+                svg: SVG_ILLUSTRATIONS.q3,
+                context: "Las categorías taxonómicas funcionan como un sistema jerárquico de conjuntos incluidos unos dentro de otros, ordenados desde el nivel más amplio y general hasta el nivel más particular y específico: Dominio, Reino, Filo (o División en plantas), Clase, Orden, Familia, Género y Especie. Esta organización implica que si dos organismos comparten una categoría inferior (por ejemplo, pertenecen a la misma Familia), obligatoriamente deben compartir todas las categorías superiores que la contienen (el mismo Orden, la misma Clase, el mismo Filo, el mismo Reino y el mismo Dominio), pero no necesariamente comparten el mismo Género.",
+                text: "Si en un estudio zoológico se comprueba que el oso de anteojos andino (Tremarctos ornatus) y el oso pardo (Ursus arctos) pertenecen a la misma Familia taxonómica (Ursidae), ¿qué conclusión científica es obligatoriamente cierta?",
+                options: [
+                    "Ambos osos pertenecen exactamente al mismo Género y a la misma Especie biológica, pero se ubican en diferentes Reinos de la naturaleza.",
+                    "Ambos osos comparten obligatoriamente el mismo Orden (Carnivora), la misma Clase (Mammalia), el mismo Filo (Chordata) y el mismo Reino (Animalia).",
+                    "Ambos osos pertenecen a Clases y Órdenes completamente distintos, ya que la categoría de Familia es más general que la categoría de Reino.",
+                    "Ninguno de los dos osos comparte el mismo Dominio ni el mismo Filo, porque habitan en continentes separados geográficamente."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Indagación",
+                topic: "Diseño y Uso de Claves Taxonómicas",
+                svg: SVG_ILLUSTRATIONS.q4,
+                context: "Durante una práctica de laboratorio en grado sexto, el profesor entrega a los estudiantes cuatro muestras vegetales desconocidas y les pide identificarlas utilizando una clave taxonómica dicotómica. Una clave dicotómica consiste en una secuencia ordenada de enunciados divididos en pares de opciones contrapuestas y mutuamente excluyentes (por ejemplo, '1a. Planta con flores visibles' frente a '1b. Planta sin flores, se reproduce por esporas'). Al elegir una de las dos opciones según lo observado en la muestra, la clave dirige al estudiante hacia el siguiente par de preguntas hasta determinar con exactitud la identidad del organismo.",
+                text: "Al diseñar una clave taxonómica dicotómica en el laboratorio, ¿por qué es un error utilizar criterios subjetivos como '1a. Hoja bonita y grande / 1b. Hoja fea y pequeña'?",
+                options: [
+                    "Porque las claves dicotómicas exigen utilizar características morfológicas observables, medibles y contrastantes que no dependan de la opinión personal del observador.",
+                    "Porque las claves dicotómicas deben ofrecer al menos cinco o seis opciones simultáneas en cada paso en lugar de dividir el grupo en dos rutas opuestas.",
+                    "Porque las plantas no poseen estructuras físicas externas visibles y solo pueden identificarse mediante el sonido que producen en el ecosistema.",
+                    "Porque el uso de adjetivos subjetivos acelera demasiado la identificación y evita que los estudiantes utilicen el microscopio estereoscópico."
+                ],
+                correct: 0
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Uso comprensivo del conocimiento científico",
+                topic: "Morfología de las Hojas: Estructuras Principales",
+                svg: SVG_ILLUSTRATIONS.q5,
+                context: "La hoja es el órgano vegetativo de las plantas vasculares especializado principalmente en realizar la fotosíntesis y regular la transpiración. Al analizar la morfología externa de una hoja típica completa, los botánicos distinguen tres partes fundamentales: 1) El limbo o lámina foliar, que es la región plana, ancha y verde que posee dos caras (el haz en la parte superior y el envés en la parte inferior); 2) El pecíolo, que es el tallito o cabillo cilíndrico que sostiene al limbo y lo separa del tallo para orientarlo hacia la luz solar; y 3) La vaina, que es el ensanchamiento en la base del pecíolo por donde la hoja se une firmemente al nudo del tallo.",
+                text: "Si un estudiante encuentra en el jardín escolar una planta cuyas hojas tienen el limbo unido directamente al tallo porque carecen por completo de pecíolo (hojas sésiles o sentadas), ¿qué estructura morfológica está ausente en dichas hojas?",
+                options: [
+                    "Está ausente el limbo o lámina foliar, por lo cual la hoja no tiene superficie plana ni clorofila para captar la energía luminosa del Sol.",
+                    "Está ausente el pecíolo, es decir, el conducto o cabillo de soporte que normalmente conecta la base de la lámina foliar con el tallo de la planta.",
+                    "Están ausentes todas las nervaduras vasculares (xilema y floema), impidiendo que el agua llegue a las células vegetales de la hoja.",
+                    "Está ausente el ápice foliar, lo que significa que la hoja carece de borde externo y de cara superior o haz."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Indagación",
+                topic: "Morfología de las Hojas: Simples vs. Compuestas",
+                svg: SVG_ILLUSTRATIONS.q6,
+                context: "En una salida de observación botánica, dos estudiantes discuten frente a una rama de árbol de matarratón. El primer estudiante afirma que la rama tiene diez hojas pequeñas ubicadas una frente a la otra. Sin embargo, el segundo estudiante observa con una lupa la base de cada supuesta 'hojita' y nota que ninguna de ellas tiene yema axilar en su base; en cambio, descubre que la única yema axilar se encuentra en la unión del eje principal (raquis) con el tallo del árbol. Esto demuestra que toda esa estructura con diez divisiones corresponde en realidad a una sola hoja cuya lámina está fragmentada en pequeñas unidades llamadas folíolos.",
+                text: "Con base en la evidencia de la yema axilar y la división del limbo en múltiples folíolos, ¿cómo se clasifica morfológicamente la hoja observada por los estudiantes?",
+                options: [
+                    "Se clasifica como una hoja simple entera, ya que posee un único limbo continuo que nunca se divide en subunidades menores.",
+                    "Se clasifica como una hoja compuesta, porque su lámina foliar está totalmente dividida en varias subunidades individuales llamadas folíolos que comparten una sola yema axilar en la base del pecíolo.",
+                    "Se clasifica como un tallo subterráneo modificado, debido a que las hojas verdaderas nunca presentan nervaduras ni folíolos verdes.",
+                    "Se clasifica como una flor incompleta, ya que la presencia de un raquis central es exclusiva de los órganos reproductivos de los helechos."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Explicación de fenómenos",
+                topic: "Morfología de las Hojas: Nervaduras Foliares",
+                svg: SVG_ILLUSTRATIONS.q7,
+                context: "Las nervaduras o venas de una hoja son haces vasculares formados por xilema (que transporta agua y sales minerales desde la raíz) y floema (que distribuye los azúcares producidos en la fotosíntesis). La disposición de estas nervaduras es un carácter taxonómico clave para clasificar las plantas con flores: en las plantas dicotiledóneas (como el mango o el roble), suele presentarse una nervadura pinnatinervia (un nervio central principal del que salen nervios secundarios como una pluma) o palmatinervia; mientras que en las plantas monocotiledóneas (como el maíz, la caña de azúcar y los pastos), las nervaduras recorren la hoja longitudinalmente sin cruzarse entre sí.",
+                text: "Al examinar una hoja alargada de maíz en el laboratorio y observar que todas sus venas corren de forma recta y equidistante desde la base hasta el ápice sin unirse en un nervio central único, ¿qué tipo de nervadura registra el estudiante?",
+                options: [
+                    "Nervadura paralelinervia, característica fundamental para identificar taxonómicamente a muchas plantas del grupo de las monocotiledóneas.",
+                    "Nervadura pinnatinervia reticulada, en la cual una única vena gruesa central ramifica venas secundarias perpendiculares en forma de red.",
+                    "Nervadura palmatinervia, donde cinco nervios principales nacen de un mismo punto basal imitando los dedos abiertos de una mano.",
+                    "Ausencia total de nervadura vascular, lo cual indica que la planta de maíz pertenece al grupo de los musgos no vasculares."
+                ],
+                correct: 0
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Indagación",
+                topic: "Morfología de las Hojas: Bordes o Márgenes",
+                svg: SVG_ILLUSTRATIONS.q8,
+                context: "Un grupo de estudiantes de sexto grado está construyendo un herbario escolar y debe clasificar tres hojas simples utilizando la forma de su borde o margen foliar como criterio taxonómico. La Hoja M presenta un contorno completamente continuo, suave y sin ningún tipo de dientes ni hendiduras; la Hoja N presenta pequeños dientes puntiagudos inclinados hacia el ápice, muy parecidos a los dientes de un serrucho de carpintería; y la Hoja O presenta entradas y salientes redondeadas profundas a ambos lados de la lámina, similares a las hojas del árbol de roble.",
+                text: "¿Cuál es la secuencia correcta de términos botánicos que deben escribir los estudiantes en las fichas técnicas de las Hojas M, N y O respectivamente?",
+                options: [
+                    "Hoja M: Borde aserrado — Hoja N: Borde lobulado — Hoja O: Borde entero o liso.",
+                    "Hoja M: Borde entero (liso) — Hoja N: Borde aserrado — Hoja O: Borde lobulado.",
+                    "Hoja M: Borde compuesto — Hoja N: Borde paralelinervio — Hoja O: Borde peciolado.",
+                    "Hoja M: Borde espinoso — Hoja N: Borde entero (liso) — Hoja O: Borde acicular."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Explicación de fenómenos",
+                topic: "Sistemática y Árboles Filogenéticos (Cladogramas)",
+                svg: SVG_ILLUSTRATIONS.q9,
+                context: "En sistemática biológica, los científicos representan las hipótesis sobre la evolución de los seres vivos mediante diagramas ramificados llamados cladogramas o árboles filogenéticos. En estos diagramas, cada punto de bifurcación (llamado nodo) representa un ancestro común del cual divergieron dos o más linajes evolutivos debido a la aparición de nuevas características heredables. Cuanto más cercano a la parte superior del árbol se encuentre el nodo que une a dos especies, más reciente es su ancestro común y mayor es su grado de parentesco evolutivo y genético.",
+                text: "Observando el cladograma de la lámina científica, en el que el lobo (Canis lupus) y el coyote (Canis latrans) comparten un nodo muy superficial frente a los reptiles y los peces, ¿qué conclusión evolutiva es correcta?",
+                options: [
+                    "Que los peces evolucionaron directamente a partir de los lobos hace pocos años sin tener ningún ancestro común con los reptiles.",
+                    "Que el lobo y el coyote están mucho más emparentados entre sí porque comparten un ancestro común más reciente que el que comparten con los reptiles o los peces.",
+                    "Que los reptiles, los peces y los mamíferos no guardan ninguna relación evolutiva y pertenecen a dominios celulares procariotas.",
+                    "Que el coyote y el lobo son exactamente la misma especie biológica y por eso no presentan ninguna diferencia en su nombre científico."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.31,
+                competency: "Explicación de fenómenos",
+                topic: "Sistemática Molecular y Categoría de Dominio",
+                svg: SVG_ILLUSTRATIONS.q10,
+                context: "Durante mucho tiempo, todos los microorganismos unicelulares sin núcleo definido (procariontes) eran clasificados dentro de un único grupo llamado Reino Monera. Sin embargo, a finales del siglo XX, el microbiólogo Carl Woese aplicó técnicas de sistemática molecular para comparar las secuencias del ARN ribosomal de diversos microorganismos. Descubrió que ciertos procariontes que habitan en ambientes extremos (aguas termales hirvientes, lagos hipersalinos o fondos oceánicos sin oxígeno) tenían una bioquímica y una genética tan distinta de las bacterias comunes que fue necesario crear una categoría superior al Reino: el Dominio.",
+                text: "A partir de los estudios de sistemática molecular de Carl Woese, ¿cuáles son los tres grandes Dominios en los que se clasifica actualmente toda la vida celular?",
+                options: [
+                    "Dominio Animalia, Dominio Plantae y Dominio Fungi, excluyendo por completo a los microorganismos unicelulares.",
+                    "Dominio Bacteria, Dominio Archaea (arqueas extremófilas) y Dominio Eukarya (organismos con células eucariotas con núcleo verdadero).",
+                    "Dominio Vertebrados, Dominio Invertebrados y Dominio Bacteriano, basados únicamente en la presencia o ausencia de huesos.",
+                    "Dominio Terrestre, Dominio Acuático y Dominio Aéreo, según el medio físico donde se desplacen los organismos."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.30,
+                competency: "Explicación de fenómenos",
+                topic: "Morfología y Adaptación Fisiológica de las Hojas",
+                svg: SVG_ILLUSTRATIONS.q11,
+                context: "Al observar al microscopio la epidermis de una hoja, se distinguen dos caras con adaptaciones diferentes: el haz (cara superior que recibe directamente la radiación solar) suele tener una capa cerosa impermeable llamada cutícula para evitar la desecación; mientras que en el envés (cara inferior más fresca y sombreada) abundan miles de poros microscópicos llamados estomas, rodeados por dos células oclusivas que se abren y se cierran. Por los estomas ingresa el dióxido de carbono (CO₂) necesario para la fotosíntesis y se libera oxígeno (O₂) junto con vapor de agua.",
+                text: "¿Por qué en la mayoría de las plantas terrestres los estomas se localizan principalmente en el envés (cara inferior) de la hoja y no en el haz (cara superior)?",
+                options: [
+                    "Porque en el envés nunca hay contacto con el aire atmosférico, lo que impide que la planta realice el proceso de respiración celular.",
+                    "Porque al ubicarse en la cara inferior sombreada se reduce la evaporación excesiva de agua causada por el impacto directo de los rayos solares, evitando que la planta se deshidrate.",
+                    "Porque los estomas son estructuras diseñadas únicamente para absorber tierra y raíces desde la parte baja de las ramas.",
+                    "Porque el haz de la hoja está formado por células muertas de madera que no contienen cloroplastos ni participan en la fotosíntesis."
+                ],
+                correct: 1
+            },
+            {
+                type: "closed",
+                timeLimit: 90,
+                pts: 0.30,
+                competency: "Indagación",
+                topic: "Análisis de Parentesco mediante Nombres Científicos",
+                svg: SVG_ILLUSTRATIONS.q12,
+                context: "Un grupo de ornitólogos registra en una reserva natural de Córdoba tres aves de la familia de los loros y guacamayas (Familia Psittacidae): la Especie A es la guacamaya bandera (Ara macao), la Especie B es la guacamaya azuliamarilla (Ara ararauna) y la Especie C es el loro real amazónico (Amazona ochrocephala). Los estudiantes de sexto grado deben analizar la tabla taxonómica de la lámina para determinar cuáles de estas tres aves guardan el mayor grado de cercanía taxonómica y evolutiva.",
+                text: "Al comparar los nombres científicos y las categorías registradas en la tabla de la lámina, ¿cuál de las siguientes afirmaciones es correcta?",
+                options: [
+                    "Las especies A y C son las más cercanas evolutivamente porque sus epítetos específicos tienen la misma cantidad de sílabas.",
+                    "Las especies A (Ara macao) y B (Ara ararauna) tienen mayor parentesco entre sí que con la especie C, ya que además de pertenecer a la misma Familia, comparten el mismo Género taxonómico (Ara).",
+                    "Las tres aves pertenecen a la misma Especie biológica porque todas habitan en bosques tropicales de Colombia y tienen plumas coloridas.",
+                    "Ninguna de las tres aves comparte la misma Clase ni el mismo Reino, puesto que tienen nombres científicos diferentes."
+                ],
+                correct: 1
+            },
+
+            // ==================== 3 PREGUNTAS ABIERTAS (10 min = 600s c/u) ====================
+            {
+                type: "open",
+                timeLimit: 600,
+                pts: 0.43,
+                competency: "Indagación",
+                topic: "Aplicación de Sistemática y Taxonomía en Campo",
+                svg: SVG_ILLUSTRATIONS.q1,
+                context: "Imagina que formas parte de una expedición botánica y zoológica del Gimnasio Cristiano Faro de Luz en los bosques húmedos de Córdoba y encuentras un organismo que ningún habitante ni guía había visto antes. Como joven científico, debes liderar el protocolo para clasificarlo y descubrir su origen evolutivo.",
+                text: "PREGUNTA ABIERTA 1: Explica detalladamente qué pasos realizarías desde la TAXONOMÍA para clasificar y darle nombre a este nuevo organismo, y qué estudios adicionales aplicarías desde la SISTEMÁTICA para descubrir quiénes son sus parientes evolutivos. (Redacta mínimo 4 líneas coherentes)."
+            },
+            {
+                type: "open",
+                timeLimit: 600,
+                pts: 0.43,
+                competency: "Uso comprensivo del conocimiento científico",
+                topic: "Diseño de Clave Taxonómica Dicotómica",
+                svg: SVG_ILLUSTRATIONS.q4,
+                context: "Las claves taxonómicas dicotómicas permiten identificar seres vivos mediante pares de características físicas opuestas y excluyentes (1a / 1b, 2a / 2b, 3a / 3b). En tu mesa de laboratorio tienes cuatro organismos muy distintos: 1) Un león, 2) Un águila, 3) Una rana y 4) Una planta de mango.",
+                text: "PREGUNTA ABIERTA 2: Redacta paso a paso una clave dicotómica original (usando pasos 1a/1b, 2a/2b, 3a/3b) que permita separar e identificar a estos cuatro seres vivos (león, águila, rana y planta de mango) y explica por qué las características que elegiste son objetivas. (Redacta mínimo 4 líneas coherentes)."
+            },
+            {
+                type: "open",
+                timeLimit: 600,
+                pts: 0.44,
+                competency: "Explicación de fenómenos",
+                topic: "Morfología de las Hojas y Adaptación al Entorno",
+                svg: SVG_ILLUSTRATIONS.q5,
+                context: "La morfología foliar (las partes de la hoja como limbo, pecíolo y vaina; si es simple o compuesta; su tipo de nervadura y la forma de su borde) no solo sirve a los botánicos para clasificar plantas en claves taxonómicas, sino que también cumple funciones vitales para la supervivencia de la planta en su clima.",
+                text: "PREGUNTA ABIERTA 3: Describe las partes principales de una hoja (limbo, pecíolo, vaina, nervaduras, haz y envés), explica la diferencia entre una hoja simple y una compuesta, y argumenta cómo la forma de las hojas ayuda a las plantas a sobrevivir y realizar la fotosíntesis. (Redacta mínimo 4 líneas coherentes)."
+            }
+        ];
+
+        /*************************************************************************
+         * 4. ESTADO DE LA APLICACIÓN Y VARIABLES DE CONTROL
+         *************************************************************************/
+        const TEACHER_PASSWORDS = ["dmar2026", "0323"]; // Acepta dmar2026 como principal y 0323 de respaldo
+        const PDF_PASSWORD = "dmar2026";
+
+        let state = {
+            studentName: "",
+            started: false,
+            ended: false,
+            teacherBypassTimeWindow: false,
+            currentIndex: 0,
+            selectedOptionIndex: null,
+            questionTimeLeft: 0,
+            questionTimerId: null,
+            startTime: null,
+            endTime: null,
+            baseScore: 0,
+            penalties: 0,
+            penaltyLog: [],
+            answersLog: [],
+            lastUserActivity: Date.now(),
+            lastTabPenaltyTimestamp: 0,
+            lastNoisePenaltyTimestamp: 0,
+            currentNoisePercent: 0
+        };
+
+        /*************************************************************************
+         * 5. RELOJ SINCRONIZADO CON EL DISPOSITIVO (8:25 AM - 10:05 AM)
+         *************************************************************************/
+        function updateDeviceClock() {
+            const now = new Date();
+            const clockEl = document.getElementById('liveClockDisplay');
+            if (clockEl) {
+                clockEl.textContent = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+
+            // Si el examen está en curso y llega a las 10:05 AM (605 minutos), se envía automáticamente
+            if (state.started && !state.ended && !state.teacherBypassTimeWindow) {
+                const totalMinutes = now.getHours() * 60 + now.getMinutes();
+                if (totalMinutes >= 605) {
+                    showToast("⏰ Se han cumplido las 10:05 AM. Finalizando y enviando evaluación automáticamente.", "warning");
+                    finalizeExam("Cumplimiento del horario límite (10:05 AM)");
+                }
+            }
+        }
+        setInterval(updateDeviceClock, 1000);
+        updateDeviceClock();
+
+        function isWithinExamSchedule() {
+            if (state.teacherBypassTimeWindow) return true;
+            const now = new Date();
+            const totalMinutes = now.getHours() * 60 + now.getMinutes();
+            // 8:25 AM = 8*60 + 25 = 505 min | 10:05 AM = 10*60 + 5 = 605 min
+            return totalMinutes >= 505 && totalMinutes <= 605;
+        }
+
+        /*************************************************************************
+         * 6. VALIDACIÓN DEL NOMBRE E INICIO DEL EXAMEN
+         *************************************************************************/
+        const nameInput = document.getElementById('studentNameInput');
+        const btnStartExam = document.getElementById('btnStartExam');
+
+        function validateStudentName() {
+            const raw = nameInput.value.trim().replace(/\s+/g, ' ');
+            const words = raw.split(' ').filter(w => w.length >= 2);
+            const valid = words.length >= 2;
+            btnStartExam.disabled = !valid;
+            const help = document.getElementById('nameValidationHelp');
+            if (valid) {
+                help.textContent = "✅ Nombre completo verificado correctamente. Puedes iniciar.";
+                help.className = "text-xs text-emerald-600 font-bold mt-2";
+            } else {
+                help.textContent = "* Ingresa al menos un nombre y un apellido para habilitar el botón de inicio.";
+                help.className = "text-xs text-slate-500 mt-2";
+            }
+        }
+
+        ['input', 'keyup', 'change'].forEach(ev => nameInput.addEventListener(ev, validateStudentName));
+
+        async function startExam() {
+            if (!isWithinExamSchedule()) {
+                showToast("⏰ El examen está programado de 8:25 AM a 10:05 AM según el reloj de tu dispositivo. Si eres el docente, usa 'Acceso Docente' (clave: dmar2026).", "error");
+                return;
+            }
+
+            const rawName = nameInput.value.trim().toUpperCase();
+            state.studentName = rawName.length >= 3 ? rawName : "ESTUDIANTE EN MODO DOCENTE";
+            state.started = true;
+            state.startTime = new Date();
+
+            document.getElementById('headerStudentName').textContent = state.studentName;
+            document.getElementById('sensorStatusBar').classList.remove('hidden');
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-question').classList.remove('hidden');
+
+            await requestFullScreenSafe();
+            initDecibelMeter();
+            loadQuestion(0);
+        }
+
+        /*************************************************************************
+         * 7. PANTALLA COMPLETA Y DETECCIÓN DE PESTAÑAS (SIN PENALIZAR PANTALLA APAGADA)
+         *************************************************************************/
+        async function requestFullScreenSafe() {
+            const elem = document.documentElement;
+            try {
+                if (elem.requestFullscreen) {
+                    await elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    await elem.webkitRequestFullscreen();
+                }
+            } catch (err) {
+                console.log("Pantalla completa nativa opcional en este navegador móvil.");
+            }
+        }
+
+        function returnToFullscreen() {
+            document.getElementById('fullscreenModal').classList.add('hidden');
+            document.getElementById('fullscreenModal').classList.remove('flex');
+            requestFullScreenSafe();
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            if (state.started && !state.ended && !document.fullscreenElement) {
+                const modal = document.getElementById('fullscreenModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                showToast("⚠️ Advertencia: Has salido de pantalla completa. Regresa inmediatamente.", "warning");
+            }
+        });
+
+        // Registro de actividad táctil/ratón para distinguir cambio de pestaña vs apagado de pantalla
+        ['mousemove', 'mousedown', 'keydown', 'touchstart', 'touchmove', 'scroll'].forEach(evt => {
+            window.addEventListener(evt, () => {
+                state.lastUserActivity = Date.now();
+            }, { passive: true });
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (!state.started || state.ended) return;
+
+            if (document.hidden) {
+                const now = Date.now();
+                const idleDurationMs = now - state.lastUserActivity;
+                // Si el estudiante estuvo inactivo más de 7 segundos antes de ocultarse, corresponde a apagado automático de pantalla en iOS/Android -> No penaliza
+                if (idleDurationMs > 7500) {
+                    return;
+                }
+                // Evitar doble conteo en menos de 2 segundos
+                if (now - state.lastTabPenaltyTimestamp > 2000) {
+                    state.lastTabPenaltyTimestamp = now;
+                    registerPenalty(0.5, "Cambio de pestaña o minimización de aplicación detectada");
+                }
+            }
+        });
+
+        // Bloqueo de atajos de teclado de copiado, pegado e inspección
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'u', 's', 'p'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                showToast("🚫 Acción deshabilitada: No está permitido copiar ni pegar durante el examen.", "error");
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+            }
+        });
+
+        /*************************************************************************
+         * 8. MEDIDOR DE DECIBELES AUTOMÁTICO (PENALIZA -0.5 AL SUPERAR 60%)
+         *************************************************************************/
+        async function initDecibelMeter() {
+            const levelText = document.getElementById('noiseLevelText');
+            const barFill = document.getElementById('noiseBarFill');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                levelText.textContent = "N/D";
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const audioCtx = new AudioCtx();
+                const source = audioCtx.createMediaStreamSource(stream);
+                const analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+                source.connect(analyser);
+
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                function checkVolume() {
+                    if (!state.started || state.ended) return;
+                    analyser.getByteFrequencyData(dataArray);
+
+                    let sum = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        sum += dataArray[i];
+                    }
+                    const average = sum / dataArray.length;
+                    const percent = Math.min(100, Math.round((average / 160) * 100));
+                    state.currentNoisePercent = percent;
+
+                    barFill.style.width = `${percent}%`;
+                    levelText.textContent = `${percent}%`;
+
+                    if (percent >= 60) {
+                        barFill.className = "bg-red-500 h-full transition-all duration-150";
+                        levelText.className = "font-mono font-bold text-red-400 w-10 text-right";
+
+                        const now = Date.now();
+                        if (now - state.lastNoisePenaltyTimestamp > 10000) {
+                            state.lastNoisePenaltyTimestamp = now;
+                            registerPenalty(0.5, `Nivel de ruido superior al límite permitido (${percent}% > 60%)`);
+                        }
+                    } else if (percent >= 45) {
+                        barFill.className = "bg-amber-400 h-full transition-all duration-150";
+                        levelText.className = "font-mono font-bold text-amber-300 w-10 text-right";
+                    } else {
+                        barFill.className = "bg-emerald-400 h-full transition-all duration-150";
+                        levelText.className = "font-mono font-bold text-emerald-400 w-10 text-right";
+                    }
+
+                    requestAnimationFrame(checkVolume);
+                }
+
+                requestAnimationFrame(checkVolume);
+            } catch (err) {
+                // Opcional si el micrófono del dispositivo no está disponible
+                levelText.textContent = "OPC";
+            }
+        }
+
+        function registerPenalty(points, reason) {
+            state.penalties += points;
+            const timeStr = new Date().toLocaleTimeString('es-CO');
+            state.penaltyLog.push({ time: timeStr, points, reason });
+
+            const badge = document.getElementById('penaltyCounterBadge');
+            badge.textContent = `Penalización: -${state.penalties.toFixed(1)} pts`;
+            badge.className = "bg-red-900/80 text-red-200 border border-red-400/50 px-2.5 py-0.5 rounded-full font-bold animate-pulse";
+
+            showToast(`⚠️ PENALIZACIÓN (-${points} pts): ${reason}`, "error");
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const colors = {
+                error: "bg-red-600 border-red-900 text-white",
+                warning: "bg-amber-500 border-amber-800 text-slate-950",
+                success: "bg-emerald-600 border-emerald-900 text-white",
+                info: "bg-[#081b38] border-[#c89d28] text-white"
+            };
+            toast.className = `${colors[type] || colors.info} border-l-4 p-4 rounded-xl shadow-2xl font-bold text-xs md:text-sm toast-animate pointer-events-auto flex items-center justify-between gap-3`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5500);
+        }
+
+        /*************************************************************************
+         * 9. MOTOR DE PREGUNTAS, LÁMINAS SVG Y TEMPORIZADORES OBLIGATORIOS
+         *************************************************************************/
+        function loadQuestion(index) {
+            if (index >= EXAM_QUESTIONS.length) {
+                finalizeExam("Completadas todas las preguntas de la evaluación");
+                return;
+            }
+
+            state.currentIndex = index;
+            state.selectedOptionIndex = null;
+            const q = EXAM_QUESTIONS[index];
+
+            // Actualizar encabezados y progreso
+            document.getElementById('questionNumberBadge').textContent = `Pregunta ${index + 1} de ${EXAM_QUESTIONS.length}`;
+            document.getElementById('examProgressBar').style.width = `${((index + 1) / EXAM_QUESTIONS.length) * 100}%`;
+            document.getElementById('competencyBadge').innerHTML = `🔬 ${q.competency}`;
+            document.getElementById('topicTag').textContent = q.topic;
+            document.getElementById('questionSvgContainer').innerHTML = q.svg;
+            document.getElementById('questionContextText').textContent = q.context;
+            document.getElementById('questionStemText').textContent = q.text;
+
+            const typeBadge = document.getElementById('questionTypeBadge');
+            const closedContainer = document.getElementById('closedOptionsContainer');
+            const openContainer = document.getElementById('openQuestionContainer');
+
+            if (q.type === "closed") {
+                typeBadge.textContent = "Parte I • Pregunta Cerrada (1.5 min)";
+                typeBadge.className = "bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-xs border border-blue-200";
+                openContainer.classList.add('hidden');
+                closedContainer.classList.remove('hidden');
+                closedContainer.innerHTML = "";
+
+                const letters = ["A", "B", "C", "D"];
+                q.options.forEach((optText, idx) => {
+                    const btn = document.createElement('div');
+                    btn.className = "option-card p-4 rounded-xl border-2 border-slate-200 bg-white cursor-pointer flex items-start gap-3.5";
+                    btn.onclick = () => selectClosedOption(idx, btn);
+                    btn.innerHTML = `
+                        <div class="w-8 h-8 rounded-lg bg-[#081b38] text-[#c89d28] font-extrabold flex items-center justify-center shrink-0 mt-0.5 text-sm shadow-sm">
+                            ${letters[idx]}
+                        </div>
+                        <p class="text-slate-700 font-medium text-sm md:text-base leading-relaxed">${optText}</p>
+                    `;
+                    closedContainer.appendChild(btn);
+                });
+            } else {
+                typeBadge.textContent = "Parte II • Pregunta Abierta (10 min)";
+                typeBadge.className = "bg-amber-100 text-amber-900 font-bold px-3 py-1 rounded-full text-xs border border-amber-300";
+                closedContainer.classList.add('hidden');
+                openContainer.classList.remove('hidden');
+
+                const textarea = document.getElementById('openAnswerInput');
+                textarea.value = "";
+                validateOpenResponseLive();
+            }
+
+            // Iniciar temporizador obligatorio de la pregunta
+            clearInterval(state.questionTimerId);
+            state.questionTimeLeft = q.timeLimit;
+            updateQuestionTimerUI();
+            refreshNextButtonState();
+
+            state.questionTimerId = setInterval(() => {
+                if (state.questionTimeLeft > 0) {
+                    state.questionTimeLeft--;
+                    updateQuestionTimerUI();
+                    refreshNextButtonState();
+                } else {
+                    clearInterval(state.questionTimerId);
+                    refreshNextButtonState();
+                }
+            }, 1000);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function selectClosedOption(idx, cardElement) {
+            state.selectedOptionIndex = idx;
+            const allCards = document.querySelectorAll('#closedOptionsContainer .option-card');
+            allCards.forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            refreshNextButtonState();
+        }
+
+        function evaluateOpenAnswerCoherence(text) {
+            const clean = text.trim();
+            const words = clean.split(/\s+/).filter(w => w.length >= 2);
+            // Contamos líneas explícitas o bloques de al menos 7 palabras equivalentes a 4 líneas coherentes (mínimo 28 palabras)
+            const explicitLines = clean.split(/\n+/).filter(line => line.trim().split(/\s+/).length >= 5).length;
+            const equivalentLines = Math.floor(words.length / 7);
+            const effectiveLines = Math.max(explicitLines, equivalentLines);
+            const uniqueWords = new Set(words.map(w => w.toLowerCase())).size;
+            const isCoherent = effectiveLines >= 4 && words.length >= 28 && uniqueWords >= 12;
+
+            return {
+                wordsCount: words.length,
+                linesCount: Math.min(4, effectiveLines),
+                isCoherent
+            };
+        }
+
+        function validateOpenResponseLive() {
+            const text = document.getElementById('openAnswerInput').value;
+            const analysis = evaluateOpenAnswerCoherence(text);
+
+            document.getElementById('wordCountTracker').textContent = `${analysis.wordsCount} palabras (mín. 28)`;
+            const badge = document.getElementById('openLinesBadge');
+            badge.textContent = `Líneas coherentes: ${analysis.linesCount} / 4`;
+
+            const statusText = document.getElementById('coherenceStatusText');
+            if (analysis.isCoherent) {
+                badge.className = "bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full text-xs border border-emerald-300";
+                statusText.textContent = "✅ Redacción válida: Cumple las 4 líneas coherentes.";
+                statusText.className = "text-emerald-600 font-bold";
+            } else {
+                badge.className = "bg-amber-100 text-amber-800 font-bold px-2.5 py-1 rounded-full text-xs border border-amber-300";
+                statusText.textContent = "Continúa redactando hasta completar al menos 4 líneas con sentido biológico.";
+                statusText.className = "text-slate-500";
+            }
+
+            refreshNextButtonState();
+        }
+
+        document.getElementById('openAnswerInput').addEventListener('input', validateOpenResponseLive);
+
+        function formatMMSS(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function updateQuestionTimerUI() {
+            const display = document.getElementById('questionTimerDisplay');
+            display.textContent = formatMMSS(state.questionTimeLeft);
+            if (state.questionTimeLeft === 0) {
+                display.className = "font-mono text-2xl md:text-3xl font-black bg-emerald-400 text-[#081b38] px-4 py-1 rounded-lg shadow";
+            } else {
+                display.className = "font-mono text-2xl md:text-3xl font-black bg-white text-[#081b38] px-4 py-1 rounded-lg shadow-inner";
+            }
+        }
+
+        function refreshNextButtonState() {
+            const q = EXAM_QUESTIONS[state.currentIndex];
+            const btn = document.getElementById('btnNextQuestion');
+            const btnText = document.getElementById('btnNextQuestionText');
+
+            const timeReady = state.questionTimeLeft <= 0;
+            let answerReady = false;
+
+            if (q.type === "closed") {
+                answerReady = state.selectedOptionIndex !== null;
+            } else {
+                const analysis = evaluateOpenAnswerCoherence(document.getElementById('openAnswerInput').value);
+                answerReady = analysis.isCoherent;
+            }
+
+            if (!timeReady) {
+                btn.disabled = true;
+                btnText.textContent = `Tiempo obligatorio restante (${formatMMSS(state.questionTimeLeft)})...`;
+            } else if (!answerReady) {
+                btn.disabled = true;
+                btnText.textContent = q.type === "closed"
+                    ? "Selecciona una opción (A, B, C o D) para avanzar"
+                    : "Completa mínimo 4 líneas coherentes para avanzar";
+            } else {
+                btn.disabled = false;
+                btnText.textContent = state.currentIndex === EXAM_QUESTIONS.length - 1
+                    ? "Finalizar y Enviar Evaluación"
+                    : "Guardar Respuesta y Avanzar a la Siguiente";
+            }
+        }
+
+        function recordCurrentQuestionAnswer(forcedByTeacher = false) {
+            const q = EXAM_QUESTIONS[state.currentIndex];
+            const letters = ["A", "B", "C", "D"];
+
+            if (q.type === "closed") {
+                const chosenIdx = state.selectedOptionIndex;
+                const isCorrect = chosenIdx === q.correct;
+                const earned = isCorrect ? q.pts : 0;
+                state.baseScore += earned;
+
+                state.answersLog.push({
+                    number: state.currentIndex + 1,
+                    type: "Cerrada",
+                    competency: q.competency,
+                    topic: q.topic,
+                    stem: q.text,
+                    selectedText: chosenIdx !== null ? `${letters[chosenIdx]}. ${q.options[chosenIdx]}` : "Sin responder (Avance docente)",
+                    correctText: `${letters[q.correct]}. ${q.options[q.correct]}`,
+                    isCorrect: isCorrect,
+                    pointsEarned: earned,
+                    maxPoints: q.pts
+                });
+            } else {
+                const rawText = document.getElementById('openAnswerInput').value.trim();
+                const analysis = evaluateOpenAnswerCoherence(rawText);
+                const isValid = analysis.isCoherent || (forcedByTeacher && rawText.length > 10);
+                const earned = isValid ? q.pts : 0;
+                state.baseScore += earned;
+
+                state.answersLog.push({
+                    number: state.currentIndex + 1,
+                    type: "Abierta",
+                    competency: q.competency,
+                    topic: q.topic,
+                    stem: q.text,
+                    writtenText: rawText || "(Sin texto registrado)",
+                    wordsCount: analysis.wordsCount,
+                    linesCount: analysis.linesCount,
+                    isCorrect: isValid,
+                    pointsEarned: earned,
+                    maxPoints: q.pts
+                });
+            }
+        }
+
+        function handleNextQuestion() {
+            recordCurrentQuestionAnswer(false);
+            loadQuestion(state.currentIndex + 1);
+        }
+
+        /*************************************************************************
+         * 10. CONTROLES EXCLUSIVOS DEL DOCENTE (CLAVE: dmar2026)
+         *************************************************************************/
+        function openTeacherModal() {
+            document.getElementById('teacherPasswordInput').value = "";
+            document.getElementById('teacherAuthError').classList.add('hidden');
+            const modal = document.getElementById('teacherModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTeacherModal() {
+            const modal = document.getElementById('teacherModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function executeTeacherCommand(command) {
+            const inputPass = document.getElementById('teacherPasswordInput').value.trim();
+            if (!TEACHER_PASSWORDS.includes(inputPass)) {
+                document.getElementById('teacherAuthError').classList.remove('hidden');
+                return;
+            }
+
+            state.teacherBypassTimeWindow = true;
+            closeTeacherModal();
+
+            if (command === 'enter_anytime') {
+                if (!state.started) {
+                    if (nameInput.value.trim().split(/\s+/).length < 2) {
+                        nameInput.value = "DOCENTE CRISTIAN AYAZO";
+                    }
+                    startExam();
+                    showToast("🔓 Ingreso Docente autorizado fuera de restricción horaria.", "success");
+                } else {
+                    state.questionTimeLeft = 0;
+                    clearInterval(state.questionTimerId);
+                    updateQuestionTimerUI();
+                    refreshNextButtonState();
+                    showToast("🔓 Reloj de la pregunta actual liberado por el Docente.", "success");
+                }
+            } else if (command === 'advance_question') {
+                if (!state.started) {
+                    showToast("Primero inicia el examen con la opción 1.", "warning");
+                    return;
+                }
+                recordCurrentQuestionAnswer(true);
+                loadQuestion(state.currentIndex + 1);
+                showToast("⏭️ Avance directo ejecutado por el Docente.", "info");
+            } else if (command === 'jump_to_open') {
+                if (!state.started) {
+                    nameInput.value = "DOCENTE CRISTIAN AYAZO";
+                    startExam();
+                }
+                if (state.currentIndex < 12) {
+                    loadQuestion(12); // Primera pregunta abierta (índice 12)
+                    showToast("✍️ Salto directo a la sección de Preguntas Abiertas.", "info");
+                } else {
+                    recordCurrentQuestionAnswer(true);
+                    finalizeExam("Sección de preguntas abiertas finalizada por el Docente");
+                }
+            } else if (command === 'finish_exam') {
+                if (state.started && !state.ended) {
+                    recordCurrentQuestionAnswer(true);
+                }
+                finalizeExam("Finalización total autorizada por el Docente");
+            }
+        }
+
+        /*************************************************************************
+         * 11. FINALIZACIÓN, GENERACIÓN DE QR Y REPORTE PDF DETALLADO
+         *************************************************************************/
+        function finalizeExam(reasonText = "Finalización normal") {
+            if (state.ended) return;
+            state.ended = true;
+            state.endTime = new Date();
+            clearInterval(state.questionTimerId);
+
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-question').classList.add('hidden');
+            document.getElementById('screen-results').classList.remove('hidden');
+
+            const finalGrade = Math.max(0, Math.min(5, state.baseScore - state.penalties));
+            const closedCorrect = state.answersLog.filter(a => a.type === "Cerrada" && a.isCorrect).length;
+            const closedIncorrect = state.answersLog.filter(a => a.type === "Cerrada" && !a.isCorrect).length;
+            const openValid = state.answersLog.filter(a => a.type === "Abierta" && a.isCorrect).length;
+
+            document.getElementById('resultStudentSubtitle').textContent = `Estudiante: ${state.studentName}`;
+            document.getElementById('finalGradeNumber').textContent = finalGrade.toFixed(2);
+            document.getElementById('statAnswered').textContent = `${state.answersLog.length} / ${EXAM_QUESTIONS.length}`;
+            document.getElementById('statCorrect').textContent = `${closedCorrect} / 12`;
+            document.getElementById('statIncorrect').textContent = `${closedIncorrect} / 12`;
+            document.getElementById('statOpenValid').textContent = `${openValid} / 3`;
+            document.getElementById('statPenalties').textContent = `-${state.penalties.toFixed(2)} pts (${state.penaltyLog.length})`;
+
+            const dateStr = state.endTime.toLocaleDateString('es-CO');
+            const startStr = state.startTime ? state.startTime.toLocaleTimeString('es-CO') : "N/A";
+            const endStr = state.endTime.toLocaleTimeString('es-CO');
+
+            document.getElementById('statDate').textContent = dateStr;
+            document.getElementById('statStartTime').textContent = startStr;
+            document.getElementById('statEndTime').textContent = endStr;
+
+            // Construir texto detallado para el Código QR (Normalizado ASCII para lectura instantánea)
+            const closedPattern = state.answersLog
+                .filter(a => a.type === "Cerrada")
+                .map(a => `P${a.number}:${a.isCorrect ? 'OK' : 'X'}`)
+                .join(' ');
+
+            const qrPayload = [
+                `GIMNASIO CRISTIANO FARO DE LUZ`,
+                `CIENCIAS 6 - DOCENTE: CRISTIAN AYAZO`,
+                `ESTUDIANTE: ${state.studentName}`,
+                `FECHA: ${dateStr} | INICIO: ${startStr} | FIN: ${endStr}`,
+                `NOTA FINAL: ${finalGrade.toFixed(2)} / 5.00`,
+                `BASE: ${state.baseScore.toFixed(2)} | PENALIZACION: -${state.penalties.toFixed(2)}`,
+                `CONTESTADAS: ${state.answersLog.length}/15 | CERRADAS OK: ${closedCorrect}/12 | INCORRECTAS: ${closedIncorrect}`,
+                `ABIERTAS VALIDADAS: ${openValid}/3`,
+                `DETALLE: ${closedPattern}`
+            ].join('\n');
+
+            new QRious({
+                element: document.getElementById('qrCanvas'),
+                value: qrPayload,
+                size: 210,
+                background: 'white',
+                foreground: '#081b38',
+                level: 'M'
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function getBannerForPDF() {
+            try {
+                const img = document.getElementById('mainBannerImg');
+                if (img && img.complete && img.naturalWidth > 0) {
+                    const c = document.createElement('canvas');
+                    c.width = img.naturalWidth;
+                    c.height = img.naturalHeight;
+                    const ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    return c.toDataURL('image/jpeg', 0.92);
+                }
+            } catch (e) {
+                console.log("Usando banner institucional renderizado en Canvas para el PDF.");
+            }
+            return window.fallbackBannerDataUrl;
+        }
+
+        function generateDetailedPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+
+            const finalGrade = Math.max(0, Math.min(5, state.baseScore - state.penalties));
+            const closedCorrect = state.answersLog.filter(a => a.type === "Cerrada" && a.isCorrect).length;
+            const closedIncorrect = state.answersLog.filter(a => a.type === "Cerrada" && !a.isCorrect).length;
+            const openValid = state.answersLog.filter(a => a.type === "Abierta" && a.isCorrect).length;
+            const dateStr = state.endTime ? state.endTime.toLocaleDateString('es-CO') : new Date().toLocaleDateString('es-CO');
+            const startStr = state.startTime ? state.startTime.toLocaleTimeString('es-CO') : "N/A";
+            const endStr = state.endTime ? state.endTime.toLocaleTimeString('es-CO') : "N/A";
+
+            let y = 10;
+
+            // 1. Insertar Banner Superior Oficial
+            const bannerData = getBannerForPDF();
+            doc.addImage(bannerData, 'JPEG', 10, y, 190, 29);
+            y += 34;
+
+            // 2. Título del Informe
+            doc.setFillColor(8, 27, 56);
+            doc.rect(10, y, 190, 9, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text("INFORME OFICIAL DETALLADO DE EVALUACIÓN - CIENCIAS DE LA CREACIÓN 6°", 105, y + 6, { align: "center" });
+            y += 13;
+
+            // 3. Recuadro de Datos del Estudiante, Horarios y Nota Final + QR
+            doc.setDrawColor(200, 157, 40);
+            doc.setFillColor(248, 250, 252);
+            doc.setLineWidth(0.5);
+            doc.rect(10, y, 135, 46, 'FD');
+
+            doc.setTextColor(8, 27, 56);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`ESTUDIANTE: ${state.studentName}`, 14, y + 7);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(40, 40, 40);
+            doc.setFontSize(9);
+            doc.text(`Institución: Gimnasio Cristiano Faro de Luz (Código: F-GA2-004 | V: 2)`, 14, y + 13);
+            doc.text(`Docente Titular: Cristian David Ayazo | Grado: Sexto (6° Grade)`, 14, y + 18.5);
+            doc.text(`Fecha: ${dateStr}   |   Hora Inicio: ${startStr}   |   Hora Fin: ${endStr}`, 14, y + 24);
+            doc.text(`Preguntas Contestadas: ${state.answersLog.length} de 15   |   Cerradas Correctas: ${closedCorrect}/12   |   Incorrectas: ${closedIncorrect}`, 14, y + 29.5);
+            doc.text(`Preguntas Abiertas Validadas: ${openValid}/3   |   Penalizaciones Aplicadas: -${state.penalties.toFixed(2)} pts`, 14, y + 35);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.setTextColor(5, 150, 105);
+            doc.text(`CALIFICACIÓN DEFINITIVA: ${finalGrade.toFixed(2)} / 5.00  (Base: ${state.baseScore.toFixed(2)})`, 14, y + 42.5);
+
+            // Insertar QR al lado derecho del bloque superior
+            const qrCanvas = document.getElementById('qrCanvas');
+            if (qrCanvas) {
+                const qrDataUrl = qrCanvas.toDataURL('image/jpeg', 0.95);
+                doc.setDrawColor(200, 200, 200);
+                doc.rect(148, y, 52, 46);
+                doc.addImage(qrDataUrl, 'JPEG', 153, y + 2, 42, 42);
+            }
+            y += 52;
+
+            // 4. Historial de Penalizaciones (si existen)
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            if (state.penaltyLog.length > 0) {
+                doc.setTextColor(185, 28, 28);
+                doc.text(`REGISTRO DE PENALIZACIONES DE SUPERVISIÓN (-${state.penalties.toFixed(2)} pts):`, 10, y);
+                y += 5;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8.5);
+                state.penaltyLog.forEach((p, idx) => {
+                    if (y > 275) { doc.addPage(); y = 15; }
+                    doc.text(`${idx + 1}. [${p.time}] -${p.points.toFixed(1)} pts — Motivo: ${p.reason}`, 14, y);
+                    y += 4.5;
+                });
+                y += 3;
+            } else {
+                doc.setTextColor(5, 150, 105);
+                doc.text("REGISTRO DE SUPERVISIÓN: Sin infracciones de pestaña ni exceso de decibeles (0.0 pts descontados).", 10, y);
+                y += 7;
+            }
+
+            // 5. Desglose Completo de todas las Preguntas (Cerradas y Abiertas)
+            doc.setFillColor(226, 232, 240);
+            doc.rect(10, y, 190, 7, 'F');
+            doc.setTextColor(8, 27, 56);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9.5);
+            doc.text("DETALLE PREGUNTA POR PREGUNTA Y REDACCIÓN EN PREGUNTAS ABIERTAS", 14, y + 5);
+            y += 11;
+
+            state.answersLog.forEach((ans) => {
+                if (y > 255) {
+                    doc.addPage();
+                    y = 15;
+                }
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(9);
+                if (ans.isCorrect) {
+                    doc.setTextColor(5, 120, 85);
+                } else {
+                    doc.setTextColor(185, 28, 28);
+                }
+
+                const statusLabel = ans.isCorrect ? "CORRECTA / VALIDADA" : "INCORRECTA / INCOMPLETA";
+                doc.text(`Pregunta ${ans.number} [${ans.type}] - ${ans.topic} (${ans.Competency || ans.competency}) -> ${statusLabel} (+${ans.pointsEarned.toFixed(2)} pts)`, 10, y);
+                y += 4.5;
+
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(30, 30, 30);
+                doc.setFontSize(8.5);
+                const stemLines = doc.splitTextToSize(`Enunciado: ${ans.stem}`, 186);
+                doc.text(stemLines, 12, y);
+                y += stemLines.length * 4;
+
+                if (ans.type === "Cerrada") {
+                    const selLines = doc.splitTextToSize(`• Respuesta marcada por el estudiante: ${ans.selectedText}`, 182);
+                    doc.setTextColor(ans.isCorrect ? 5 : 185, ans.isCorrect ? 120 : 28, ans.isCorrect ? 85 : 28);
+                    doc.text(selLines, 14, y);
+                    y += selLines.length * 4;
+
+                    if (!ans.isCorrect) {
+                        doc.setTextColor(5, 120, 85);
+                        const corrLines = doc.splitTextToSize(`• Respuesta correcta esperada: ${ans.correctText}`, 182);
+                        doc.text(corrLines, 14, y);
+                        y += corrLines.length * 4;
+                    }
+                } else {
+                    // Pregunta Abierta: Incluir todo lo que redactó el estudiante
+                    doc.setTextColor(30, 58, 138);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`• Redacción textual del estudiante (${ans.wordsCount} palabras | ${ans.linesCount} líneas válidas):`, 14, y);
+                    y += 4;
+
+                    doc.setFont('helvetica', 'italic');
+                    const openLines = doc.splitTextToSize(`"${ans.writtenText}"`, 180);
+                    if (y + openLines.length * 4 > 280) {
+                        doc.addPage();
+                        y = 15;
+                    }
+                    doc.text(openLines, 16, y);
+                    y += openLines.length * 4 + 1;
+                }
+
+                doc.setDrawColor(220, 220, 220);
+                doc.line(10, y, 200, y);
+                y += 4.5;
+            });
+
+            const cleanFileName = state.studentName.replace(/[^A-Z0-9]/gi, '_');
+            doc.save(`Informe_Ciencias6_${cleanFileName}.pdf`);
+        }
+    </script>
+</body>
+</html>
